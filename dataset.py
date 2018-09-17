@@ -27,9 +27,10 @@ class DataSet:
                         cutted_face = cut_face(img_path)
                         if cutted_face is None:
                             cutted_face = cv2.imread(img_path) # 图片本身都是250×250的
+                            cutted_face = cv2.resize(cutted_face, (150, 150), interpolation=cv2.INTER_CUBIC)
                             images.append(cutted_face)
                         else:
-                            cutted_face = cv2.resize(cutted_face,(250,250),interpolation=cv2.INTER_CUBIC)
+                            cutted_face = cv2.resize(cutted_face,(150,150),interpolation=cv2.INTER_CUBIC)
                             images.append(cutted_face)
                         labels.append(c)
             images = images[start:end]

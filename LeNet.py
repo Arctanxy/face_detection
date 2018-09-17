@@ -1,5 +1,5 @@
 from keras.models import Sequential,Model
-from keras.layers import Dense,Flatten,Conv2D,MaxPool2D,Input
+from keras.layers import Dense,Flatten,Conv2D,MaxPool2D,Input,BatchNormalization
 from keras.layers import merge,concatenate
 from keras.utils.vis_utils import plot_model
 
@@ -43,11 +43,12 @@ from keras.utils.vis_utils import plot_model
 #     )
 # )
 
-input1 = Input(shape=(250,250,3))
+input1 = Input(shape=(150,150,3))
+batch1 = BatchNormalization()(input1)
 conv1 = Conv2D(
-        32,(5,5),strides=(1,1),input_shape=(250,250,6),padding='valid',
+        32,(5,5),strides=(1,1),input_shape=(150,150,3),padding='valid',
         activation='relu',kernel_initializer='uniform'
-    )(input1)
+    )(batch1)
 maxpool1 = MaxPool2D(pool_size=(2,2))(conv1)
 conv2 = Conv2D(
         64,(5,5),strides=(1,1),padding='valid',activation='relu',
@@ -64,24 +65,25 @@ dense2 = Dense(
 
 
 
-_input1 = Input(shape=(250,250,3))
+_input1 = Input(shape=(150,150,3))
+_batch1 = BatchNormalization()(_input1)
 _conv1 = Conv2D(
-        32,(5,5),strides=(1,1),input_shape=(250,250,6),padding='valid',
+        32,(5,5),strides=(1,1),input_shape=(150,150,3),padding='valid',
         activation='relu',kernel_initializer='uniform'
-    )(input1)
-_maxpool1 = MaxPool2D(pool_size=(2,2))(conv1)
+    )(_batch1)
+_maxpool1 = MaxPool2D(pool_size=(2,2))(_conv1)
 _conv2 = Conv2D(
         64,(5,5),strides=(1,1),padding='valid',activation='relu',
         kernel_initializer='uniform'
-    )(maxpool1)
-_maxpool2 = MaxPool2D(pool_size=(2,2))(conv2)
-_fla = Flatten()(maxpool2)
+    )(_maxpool1)
+_maxpool2 = MaxPool2D(pool_size=(2,2))(_conv2)
+_fla = Flatten()(_maxpool2)
 _dense1 = Dense(
         100,activation='relu'
-    )(fla)
+    )(_fla)
 _dense2 = Dense(
         10,activation='relu'
-    )(dense1)
+    )(_dense1)
 
 
 
