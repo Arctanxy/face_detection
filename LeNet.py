@@ -1,54 +1,16 @@
-from keras.models import Sequential,Model
+from keras.models import Model
 from keras.layers import Dense,Flatten,Conv2D,MaxPool2D,Input,BatchNormalization
-from keras.layers import merge,concatenate
-from keras.utils.vis_utils import plot_model
+from keras.layers import concatenate
+import keras
 
-#
-# model = Sequential()
-# model.add(
-#     Conv2D(
-#         32,(5,5),strides=(1,1),input_shape=(250,250,6),padding='valid',
-#         activation='relu',kernel_initializer='uniform'
-#     )
-# )
-#
-# model.add(
-#     MaxPool2D(pool_size=(2,2))
-# )
-#
-# model.add(
-#     Conv2D(
-#         64,(5,5),strides=(1,1),padding='valid',activation='relu',
-#         kernel_initializer='uniform'
-#     )
-# )
-#
-# model.add(
-#     MaxPool2D(pool_size=(2,2))
-# )
-#
-# model.add(
-#     Flatten()
-# )
-#
-# model.add(
-#     Dense(
-#         100,activation='relu'
-#     )
-# )
-#
-# model.add(
-#     Dense(
-#         10,activation='sigmoid'
-#     )
-# )
-
+# 搭建LeNet，用于提取脸部特征
 input1 = Input(shape=(150,150,3))
-batch1 = BatchNormalization()(input1)
 conv1 = Conv2D(
         32,(5,5),strides=(1,1),input_shape=(150,150,3),padding='valid',
         activation='relu',kernel_initializer='uniform'
-    )(batch1)
+    )(input1)
+# 因为relu会影响数据分布，所以常在relu运算后添加batchnormalization层
+# batch1 = BatchNormalization()(input1)
 maxpool1 = MaxPool2D(pool_size=(2,2))(conv1)
 conv2 = Conv2D(
         64,(5,5),strides=(1,1),padding='valid',activation='relu',
@@ -60,17 +22,17 @@ dense1 = Dense(
         100,activation='relu'
     )(fla)
 dense2 = Dense(
-        10,activation='relu'
+        20,activation='relu'
     )(dense1)
 
 
-
+# 另一个LeNet
 _input1 = Input(shape=(150,150,3))
-_batch1 = BatchNormalization()(_input1)
+# _batch1 = BatchNormalization()(_input1)
 _conv1 = Conv2D(
         32,(5,5),strides=(1,1),input_shape=(150,150,3),padding='valid',
         activation='relu',kernel_initializer='uniform'
-    )(_batch1)
+    )(_input1)
 _maxpool1 = MaxPool2D(pool_size=(2,2))(_conv1)
 _conv2 = Conv2D(
         64,(5,5),strides=(1,1),padding='valid',activation='relu',
@@ -82,19 +44,18 @@ _dense1 = Dense(
         100,activation='relu'
     )(_fla)
 _dense2 = Dense(
-        10,activation='relu'
+        20,activation='relu'
     )(_dense1)
 
 
 
-
+# 将两个LeNet的输出合并，并在后面添加两个全连接层，用于计算相似度
 merged = concatenate([dense2,_dense2])
-out = Dense(1,activation='softmax')(merged)
+out1 = Dense(10,activation='relu')(merged)
+out2 = Dense(2,activation='softmax')(out1)
 
-LeNet = Model(inputs=[input1,_input1],outputs=[out])
+LeNet = Model(inputs=[input1,_input1],outputs=[out2])
 LeNet.compile(
-    optimizer='adam',
-    loss='mean_squared_error',
+    optimizer= keras.optimizers.Adam(lr=0.001),
+    loss='sparse_categorical_crossentropy',
 )
-
-# plot_model(LeNet)
